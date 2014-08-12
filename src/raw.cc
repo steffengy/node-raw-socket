@@ -1,12 +1,15 @@
 #ifndef RAW_CC
 #define RAW_CC
 
-#include <node.h>
+#include <nan.h>
+#include <v8.h>
 #include <node_buffer.h>
 
 #include <stdio.h>
 #include <string.h>
 #include "raw.h"
+
+using namespace v8;
 
 #ifdef _WIN32
 static char errbuf[1024];
@@ -53,12 +56,12 @@ static Persistent<String> RecvReadySymbol;
 static Persistent<String> SendReadySymbol;
 
 void InitAll (Handle<Object> target) {
-	CloseSymbol = NODE_PSYMBOL("close");
-	EmitSymbol = NODE_PSYMBOL("emit");
-	ErrorSymbol = NODE_PSYMBOL("error");
-	RecvReadySymbol = NODE_PSYMBOL("recvReady");
-	SendReadySymbol = NODE_PSYMBOL("sendReady");
-
+    NanAssignPersistent<String>(CloseSymbol, NanNew<String>("close"));
+    NanAssignPersistent<String>(EmitSymbol, NanNew<String>("emit"));
+    NanAssignPersistent<String>(ErrorSymbol, NanNew<String>("error"));
+    NanAssignPersistent<String>(RecvReadySymbol, NanNew<String>("recvReady"));
+    NanAssignPersistent<String>(SendReadySymbol, NanNew<String>("sendReady"));
+    
 	ExportConstants (target);
 	ExportFunctions (target);
 
@@ -67,33 +70,33 @@ void InitAll (Handle<Object> target) {
 
 NODE_MODULE(raw, InitAll)
 
-Handle<Value> CreateChecksum (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(CreateChecksum) {
+	NanScope();
 	
 	if (args.Length () < 2) {
-		ThrowException (Exception::Error (String::New (
-				"At least one argument is required")));
-		return scope.Close (args.This ());
+		NanThrowError ("At least one argument is required");
+		NanReturnValue (args.This ());
+        return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Start with argument must be an unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Start with argument must be an unsigned integer");
+		NanReturnValue (args.This ());
+        return;
 	}
 	
 	uint32_t start_with = args[0]->ToUint32 ()->Value ();
 
 	if (start_with > 65535) {
-		ThrowException (Exception::TypeError (String::New (
-				"Start with argument cannot be larger than 65535")));
-		return scope.Close (args.This ());
+		NanThrowError ("Start with argument cannot be larger than 65535");
+		NanReturnValue (args.This ());
+        return;
 	}
 
 	if (! node::Buffer::HasInstance (args[1])) {
-		ThrowException (Exception::TypeError (String::New (
-				"Buffer argument must be a node Buffer object")));
-		return scope.Close (args.This ());
+		NanThrowError ("Buffer argument must be a node Buffer object");
+		NanReturnValue (args.This ());
+        return;
 	}
 	
 	Local<Object> buffer = args[1]->ToObject ();
@@ -103,181 +106,181 @@ Handle<Value> CreateChecksum (const Arguments& args) {
 	
 	if (args.Length () > 2) {
 		if (! args[2]->IsUint32 ()) {
-			ThrowException (Exception::TypeError (String::New (
-					"Offset argument must be an unsigned integer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Offset argument must be an unsigned integer");
+			NanReturnValue (args.This ());
+            return;
 		}
 		offset = args[2]->ToUint32 ()->Value ();
 		if (offset >= length) {
-			ThrowException (Exception::RangeError (String::New (
-					"Offset argument must be smaller than length of the buffer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Offset argument must be smaller than length of the buffer");
+			NanReturnValue (args.This ());
+            return;
 		}
 	}
 	
 	if (args.Length () > 3) {
 		if (! args[3]->IsUint32 ()) {
-			ThrowException (Exception::TypeError (String::New (
-					"Length argument must be an unsigned integer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Length argument must be an unsigned integer");
+            NanReturnValue (args.This ());
+            return;
 		}
 		unsigned int new_length = args[3]->ToUint32 ()->Value ();
 		if (new_length > length) {
-			ThrowException (Exception::RangeError (String::New (
-					"Length argument must be smaller than length of the buffer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Length argument must be smaller than length of the buffer");
+			NanReturnValue (args.This ());
+            return;
 		}
 		length = new_length;
 	}
 	
 	uint16_t sum = checksum ((uint16_t) start_with,
 			(unsigned char *) data + offset, length);
-
-	Local<Integer> number = Integer::NewFromUnsigned (sum);
 	
-	return scope.Close (number);
+    NanReturnValue (NanNew<Integer>(sum));
+	return;
 }
 
-Handle<Value> Htonl (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(Htonl) {
+	NanScope();
 
 	if (args.Length () < 1) {
-		ThrowException (Exception::Error (String::New (
-				"One arguments is required")));
-		return scope.Close (args.This ());
+		NanThrowError ("One arguments is required");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Number must be a 32 unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Number must be a 32 unsigned integer");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	unsigned int number = args[0]->ToUint32 ()->Value ();
-	Local<Integer> converted = Integer::NewFromUnsigned (htonl (number));
+	Local<Integer> converted = NanNew<Integer>(htonl (number));
 
-	return scope.Close (converted);
+    NanReturnValue(converted);
+	return;
 }
 
-Handle<Value> Htons (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(Htons) {
+	NanScope();
 	
 	if (args.Length () < 1) {
-		ThrowException (Exception::Error (String::New (
-				"One arguments is required")));
-		return scope.Close (args.This ());
+		NanThrowError ("One arguments is required");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Number must be a 16 unsigned integer")));
-		return scope.Close (args.This ());
-	}
-	
-	unsigned int number = args[0]->ToUint32 ()->Value ();
-	if (number > 65535) {
-		ThrowException (Exception::RangeError (String::New (
-				"Number cannot be larger than 65535")));
-		return scope.Close (args.This ());
-	}
-	Local<Integer> converted = Integer::NewFromUnsigned (htons (number));
-
-	return scope.Close (converted);
-}
-
-Handle<Value> Ntohl (const Arguments& args) {
-	HandleScope scope;
-	
-	if (args.Length () < 1) {
-		ThrowException (Exception::Error (String::New (
-				"One arguments is required")));
-		return scope.Close (args.This ());
-	}
-
-	if (! args[0]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Number must be a 32 unsigned integer")));
-		return scope.Close (args.This ());
-	}
-
-	unsigned int number = args[0]->ToUint32 ()->Value ();
-	Local<Integer> converted = Integer::NewFromUnsigned (ntohl (number));
-
-	return scope.Close (converted);
-}
-
-Handle<Value> Ntohs (const Arguments& args) {
-	HandleScope scope;
-	
-	if (args.Length () < 1) {
-		ThrowException (Exception::Error (String::New (
-				"One arguments is required")));
-		return scope.Close (args.This ());
-	}
-
-	if (! args[0]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Number must be a 16 unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Number must be a 16 unsigned integer");
+		NanReturnValue (args.This ());
+        return;
 	}
 	
 	unsigned int number = args[0]->ToUint32 ()->Value ();
 	if (number > 65535) {
-		ThrowException (Exception::RangeError (String::New (
-				"Number cannot be larger than 65535")));
-		return scope.Close (args.This ());
+		NanThrowError ("Number cannot be larger than 65535");
+        NanReturnValue (args.This ());
+		return;
 	}
-	Local<Integer> converted = Integer::NewFromUnsigned (htons (number));
 
-	return scope.Close (converted);
+	NanReturnValue(NanNew<Integer>(htons (number)));
+    return;
+}
+
+NAN_METHOD(Ntohl) {
+	NanScope();
+	
+	if (args.Length () < 1) {
+		NanThrowError ("One arguments is required");
+        NanReturnValue (args.This ());
+		return;
+	}
+
+	if (! args[0]->IsUint32 ()) {
+		NanThrowError ("Number must be a 32 unsigned integer");
+        NanReturnValue (args.This ());
+		return;
+	}
+
+	unsigned int number = args[0]->ToUint32 ()->Value ();
+
+	NanReturnValue(NanNew<Integer>(ntohl (number)));
+    return;
+}
+
+NAN_METHOD(Ntohs) {
+	NanScope();
+	
+	if (args.Length () < 1) {
+		NanThrowError ("One arguments is required");
+        NanReturnValue (args.This ());
+		return;
+	}
+
+	if (! args[0]->IsUint32 ()) {
+		NanThrowError ("Number must be a 16 unsigned integer");
+        NanReturnValue (args.This ());
+		return;
+	}
+	
+	unsigned int number = args[0]->ToUint32 ()->Value ();
+	if (number > 65535) {
+		NanThrowError ("Number cannot be larger than 65535");
+        NanReturnValue (args.This ());
+		return;
+	}
+
+	NanReturnValue(NanNew<Integer>(htons (number)));
+    return;
 }
 
 void ExportConstants (Handle<Object> target) {
-	Local<Object> socket_level = Object::New ();
-	Local<Object> socket_option = Object::New ();
+	Local<Object> socket_level = NanNew<Object>();
+	Local<Object> socket_option = NanNew<Object>();
 
-	target->Set (String::NewSymbol ("SocketLevel"), socket_level);
-	target->Set (String::NewSymbol ("SocketOption"), socket_option);
+	target->Set (NanNew<String> ("SocketLevel"), socket_level);
+	target->Set (NanNew<String>("SocketOption"), socket_option);
 
-	socket_level->Set (String::NewSymbol ("SOL_SOCKET"), Number::New (SOL_SOCKET));
-	socket_level->Set (String::NewSymbol ("IPPROTO_IP"), Number::New (IPPROTO_IP));
-	socket_level->Set (String::NewSymbol ("IPPROTO_IPV6"), Number::New (IPPROTO_IPV6));
+	socket_level->Set (NanNew<String>("SOL_SOCKET"), NanNew<Number> (SOL_SOCKET));
+	socket_level->Set (NanNew<String>("IPPROTO_IP"), NanNew<Number> (IPPROTO_IP));
+	socket_level->Set (NanNew<String>("IPPROTO_IPV6"), NanNew<Number> (IPPROTO_IPV6));
 
-	socket_option->Set (String::NewSymbol ("SO_BROADCAST"), Number::New (SO_BROADCAST));
-	socket_option->Set (String::NewSymbol ("SO_RCVBUF"), Number::New (SO_RCVBUF));
-	socket_option->Set (String::NewSymbol ("SO_RCVTIMEO"), Number::New (SO_RCVTIMEO));
-	socket_option->Set (String::NewSymbol ("SO_SNDBUF"), Number::New (SO_SNDBUF));
-	socket_option->Set (String::NewSymbol ("SO_SNDTIMEO"), Number::New (SO_SNDTIMEO));
+	socket_option->Set (NanNew<String>("SO_BROADCAST"), NanNew<Number> (SO_BROADCAST));
+	socket_option->Set (NanNew<String>("SO_RCVBUF"), NanNew<Number> (SO_RCVBUF));
+	socket_option->Set (NanNew<String>("SO_RCVTIMEO"), NanNew<Number> (SO_RCVTIMEO));
+	socket_option->Set (NanNew<String>("SO_SNDBUF"), NanNew<Number> (SO_SNDBUF));
+	socket_option->Set (NanNew<String>("SO_SNDTIMEO"), NanNew<Number> (SO_SNDTIMEO));
 
-	socket_option->Set (String::NewSymbol ("IP_HDRINCL"), Number::New (IP_HDRINCL));
-	socket_option->Set (String::NewSymbol ("IP_OPTIONS"), Number::New (IP_OPTIONS));
-	socket_option->Set (String::NewSymbol ("IP_TOS"), Number::New (IP_TOS));
-	socket_option->Set (String::NewSymbol ("IP_TTL"), Number::New (IP_TTL));
+	socket_option->Set (NanNew<String>("IP_HDRINCL"), NanNew<Number> (IP_HDRINCL));
+	socket_option->Set (NanNew<String>("IP_OPTIONS"), NanNew<Number> (IP_OPTIONS));
+	socket_option->Set (NanNew<String>("IP_TOS"), NanNew<Number> (IP_TOS));
+	socket_option->Set (NanNew<String>("IP_TTL"), NanNew<Number> (IP_TTL));
 
 #ifdef _WIN32
-	socket_option->Set (String::NewSymbol ("IPV6_HDRINCL"), Number::New (IPV6_HDRINCL));
+	socket_option->Set (NanNew<String>("IPV6_HDRINCL"), NanNew<Number> (IPV6_HDRINCL));
 #endif
-	socket_option->Set (String::NewSymbol ("IPV6_TTL"), Number::New (IPV6_UNICAST_HOPS));
-	socket_option->Set (String::NewSymbol ("IPV6_UNICAST_HOPS"), Number::New (IPV6_UNICAST_HOPS));
-	socket_option->Set (String::NewSymbol ("IPV6_V6ONLY"), Number::New (IPV6_V6ONLY));
+	socket_option->Set (NanNew<String>("IPV6_TTL"), NanNew<Number> (IPV6_UNICAST_HOPS));
+	socket_option->Set (NanNew<String>("IPV6_UNICAST_HOPS"), NanNew<Number> (IPV6_UNICAST_HOPS));
+	socket_option->Set (NanNew<String>("IPV6_V6ONLY"), NanNew<Number> (IPV6_V6ONLY));
 }
 
 void ExportFunctions (Handle<Object> target) {
-	target->Set (String::NewSymbol ("createChecksum"), FunctionTemplate::New (CreateChecksum)->GetFunction ());
+	target->Set (NanNew<String>("createChecksum"), NanNew<FunctionTemplate> (CreateChecksum)->GetFunction ());
 	
-	target->Set (String::NewSymbol ("htonl"), FunctionTemplate::New (Htonl)->GetFunction ());
-	target->Set (String::NewSymbol ("htons"), FunctionTemplate::New (Htons)->GetFunction ());
-	target->Set (String::NewSymbol ("ntohl"), FunctionTemplate::New (Ntohl)->GetFunction ());
-	target->Set (String::NewSymbol ("ntohs"), FunctionTemplate::New (Ntohs)->GetFunction ());
+	target->Set (NanNew<String>("htonl"), NanNew<FunctionTemplate> (Htonl)->GetFunction ());
+	target->Set (NanNew<String>("htons"), NanNew<FunctionTemplate> (Htons)->GetFunction ());
+	target->Set (NanNew<String>("ntohl"), NanNew<FunctionTemplate> (Ntohl)->GetFunction ());
+	target->Set (NanNew<String>("ntohs"), NanNew<FunctionTemplate> (Ntohs)->GetFunction ());
 }
 
 void SocketWrap::Init (Handle<Object> target) {
-	HandleScope scope;
+	NanScope();
 	
-	Local<FunctionTemplate> tpl = FunctionTemplate::New (New);
+	Local<FunctionTemplate> tpl = NanNew<FunctionTemplate> (New);
 	
 	tpl->InstanceTemplate ()->SetInternalFieldCount (1);
-	tpl->SetClassName (String::NewSymbol ("SocketWrap"));
+	tpl->SetClassName (NanNew<String>("SocketWrap"));
 	
 	NODE_SET_PROTOTYPE_METHOD(tpl, "close", Close);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "getOption", GetOption);
@@ -286,7 +289,7 @@ void SocketWrap::Init (Handle<Object> target) {
 	NODE_SET_PROTOTYPE_METHOD(tpl, "send", Send);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "setOption", SetOption);
 
-	target->Set (String::NewSymbol ("SocketWrap"), tpl->GetFunction ());
+	target->Set (NanNew<String> ("SocketWrap"), tpl->GetFunction ());
 }
 
 SocketWrap::SocketWrap () {
@@ -298,17 +301,18 @@ SocketWrap::~SocketWrap () {
 	this->CloseSocket ();
 }
 
-Handle<Value> SocketWrap::Close (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::Close) {
+	NanScope();
 	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
 	
 	socket->CloseSocket ();
 
-	return scope.Close (args.This ());
+    NanReturnValue(args.This ());
+    return;
 }
 
 void SocketWrap::CloseSocket (void) {
-	HandleScope scope;
+	NanScope();
 	
 	if (this->poll_initialised_) {
 		uv_close ((uv_handle_t *) this->poll_watcher_, OnClose);
@@ -317,13 +321,13 @@ void SocketWrap::CloseSocket (void) {
 		this->poll_initialised_ = false;
 	}
 
-	Local<Value> emit = this->handle_->Get (EmitSymbol);
+	Local<Value> emit = NanObjectWrapHandle(this)->Get (NanNew(EmitSymbol));
 	Local<Function> cb = emit.As<Function> ();
 
 	Local<Value> args[1];
-	args[0] = Local<Value>::New (CloseSymbol);
+	args[0] = NanNew(CloseSymbol);
 
-	cb->Call (this->handle_, 1, args);
+	cb->Call (NanObjectWrapHandle(this), 1, args);
 }
 
 int SocketWrap::CreateSocket (void) {
@@ -357,26 +361,26 @@ int SocketWrap::CreateSocket (void) {
 	return 0;
 }
 
-Handle<Value> SocketWrap::GetOption (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::GetOption) {
+	NanScope();
 	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
 	
 	if (args.Length () < 3) {
-		ThrowException (Exception::Error (String::New (
-				"Three arguments are required")));
-		return scope.Close (args.This ());
+		NanThrowError ("Three arguments are required");
+        NanReturnValue (args.This ());
+        return;
 	}
 
 	if (! args[0]->IsNumber ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Level argument must be a number")));
-		return scope.Close (args.This ());
+		NanThrowError ("Level argument must be a number");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[1]->IsNumber ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Option argument must be a number")));
-		return scope.Close (args.This ());
+		NanThrowError ("Option argument must be a number");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	int level = args[0]->ToInt32 ()->Value ();
@@ -386,19 +390,18 @@ Handle<Value> SocketWrap::GetOption (const Arguments& args) {
 	SOCKET_LEN_TYPE len;
 
 	if (! node::Buffer::HasInstance (args[2])) {
-		ThrowException (Exception::TypeError (String::New (
-				"Value argument must be a node Buffer object if length is "
-				"provided")));
-		return scope.Close (args.This ());
+		NanThrowError ("Value argument must be a node Buffer object if length is provided");
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	Local<Object> buffer = args[2]->ToObject ();
 	val = node::Buffer::Data (buffer);
 
 	if (! args[3]->IsInt32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Length argument must be an unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Length argument must be an unsigned integer");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	len = (SOCKET_LEN_TYPE) node::Buffer::Length (buffer);
@@ -407,66 +410,65 @@ Handle<Value> SocketWrap::GetOption (const Arguments& args) {
 			(val ? val : (SOCKET_OPT_TYPE) &ival), &len);
 
 	if (rc == SOCKET_ERROR) {
-		ThrowException (Exception::Error (String::New (
-				raw_strerror (SOCKET_ERRNO))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (SOCKET_ERRNO));
+        NanReturnValue (args.This ());
+		return;
 	}
 	
-	Local<Number> got = Integer::NewFromUnsigned (len);
-	return scope.Close (got);
+	Local<Number> got = NanNew<v8::Uint32>(len);
+    NanReturnValue(got);
+	return;
 }
 
 void SocketWrap::HandleIOEvent (int status, int revents) {
-	HandleScope scope;
-
+	NanScope();
 	if (status) {
-		Local<Value> emit = this->handle_->Get (EmitSymbol);
+		Local<Value> emit = NanObjectWrapHandle(this)->Get (NanNew<String>(EmitSymbol));
 		Local<Function> cb = emit.As<Function> ();
 
 		Local<Value> args[2];
-		args[0] = Local<Value>::New (ErrorSymbol);
-		args[1] = Exception::Error (String::New (
-				raw_strerror (uv_last_error (uv_default_loop ()).code)));
+		args[0] = NanNew<String> (ErrorSymbol);
+		args[1] = NanError(raw_strerror (status));
 		
-		cb->Call (this->handle_, 2, args);
+		cb->Call (NanObjectWrapHandle(this), 2, args);
 	} else {
-		Local<Value> emit = this->handle_->Get (EmitSymbol);
+		Local<Value> emit = NanObjectWrapHandle(this)->Get (NanNew(EmitSymbol));
 		Local<Function> cb = emit.As<Function> ();
 
 		Local<Value> args[1];
 		if (revents & UV_READABLE)
-			args[0] = Local<Value>::New (RecvReadySymbol);
+			args[0] = NanNew(RecvReadySymbol);
 		else
-			args[0] = Local<Value>::New (SendReadySymbol);
+			args[0] = NanNew(SendReadySymbol);
 
-		cb->Call (this->handle_, 1, args);
+		cb->Call (NanObjectWrapHandle(this), 1, args);
 	}
 }
 
-Handle<Value> SocketWrap::New (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::New) {
+	NanScope();
 	SocketWrap* socket = new SocketWrap ();
 	int rc, family = AF_INET;
 	
 	if (args.Length () < 1) {
-		ThrowException (Exception::Error (String::New (
-				"One argument is required")));
-		return scope.Close (args.This ());
+		NanThrowError ("One argument is required");
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	if (! args[0]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Protocol argument must be an unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Protocol argument must be an unsigned integer");
+        NanReturnValue (args.This ());
+		return;
 	} else {
 		socket->protocol_ = args[0]->ToUint32 ()->Value ();
 	}
 
 	if (args.Length () > 1) {
 		if (! args[1]->IsUint32 ()) {
-			ThrowException (Exception::TypeError (String::New (
-					"Address family argument must be an unsigned integer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Address family argument must be an unsigned integer");
+            NanReturnValue (args.This ());
+			return;
 		} else {
 			if (args[1]->ToUint32 ()->Value () == 2)
 				family = AF_INET6;
@@ -481,40 +483,42 @@ Handle<Value> SocketWrap::New (const Arguments& args) {
 
 	rc = socket->CreateSocket ();
 	if (rc != 0) {
-		ThrowException (Exception::Error (String::New (raw_strerror (rc))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (rc));
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	socket->Wrap (args.This ());
 
-	return scope.Close (args.This ());
+    NanReturnValue (args.This ());
+	return;
 }
 
 void SocketWrap::OnClose (uv_handle_t *handle) {
 	delete handle;
 }
 
-Handle<Value> SocketWrap::Pause (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::Pause) {
+	NanScope();
 	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
 
 	if (args.Length () < 2) {
-		ThrowException (Exception::Error (String::New (
-				"Two arguments are required")));
-		return scope.Close (args.This ());
+		NanThrowError ("Two arguments are required");
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	if (! args[0]->IsBoolean ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Recv argument must be a boolean")));
-		return scope.Close (args.This ());
+		NanThrowError ("Recv argument must be a boolean");
+        NanReturnValue (args.This ());
+		return;
 	}
 	bool pause_recv = args[0]->ToBoolean ()->Value ();
 
 	if (! args[1]->IsBoolean ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Send argument must be a boolean")));
-		return scope.Close (args.This ());
+		NanThrowError ("Send argument must be a boolean");
+        NanReturnValue (args.This ());
+		return;
 	}
 	bool pause_send = args[1]->ToBoolean ()->Value ();
 	
@@ -527,11 +531,12 @@ Handle<Value> SocketWrap::Pause (const Arguments& args) {
 			uv_poll_start (socket->poll_watcher_, events, IoEvent);
 	}
 	
-	return scope.Close (args.This ());
+    NanReturnValue (args.This ());
+	return;
 }
 
-Handle<Value> SocketWrap::Recv (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::Recv) {
+	NanScope();
 	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
 	Local<Object> buffer;
 	sockaddr_in sin_address;
@@ -549,29 +554,30 @@ Handle<Value> SocketWrap::Recv (const Arguments& args) {
 #endif
 	
 	if (args.Length () < 2) {
-		ThrowException (Exception::Error (String::New (
-				"Five arguments are required")));
-		return scope.Close (args.This ());
+		NanThrowError ("Five arguments are required");
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	if (! node::Buffer::HasInstance (args[0])) {
-		ThrowException (Exception::TypeError (String::New (
-				"Buffer argument must be a node Buffer object")));
-		return scope.Close (args.This ());
+		NanThrowError ("Buffer argument must be a node Buffer object");
+        NanReturnValue (args.This ());
+		return;
 	} else {
 		buffer = args[0]->ToObject ();
 	}
 
 	if (! args[1]->IsFunction ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Callback argument must be a function")));
-		return scope.Close (args.This ());
+		NanThrowError ("Callback argument must be a function");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	rc = socket->CreateSocket ();
 	if (rc != 0) {
-		ThrowException (Exception::Error (String::New (raw_strerror (errno))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (errno));
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (socket->family_ == AF_INET6) {
@@ -587,9 +593,9 @@ Handle<Value> SocketWrap::Recv (const Arguments& args) {
 	}
 	
 	if (rc == SOCKET_ERROR) {
-		ThrowException (Exception::Error (String::New (raw_strerror (
-				SOCKET_ERRNO))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (SOCKET_ERRNO));
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	if (socket->family_ == AF_INET6)
@@ -601,15 +607,16 @@ Handle<Value> SocketWrap::Recv (const Arguments& args) {
 	const unsigned argc = 3;
 	Local<Value> argv[argc];
 	argv[0] = args[0];
-	argv[1] = Number::New (rc);
-	argv[2] = String::New (addr);
-	cb->Call (Context::GetCurrent ()->Global (), argc, argv);
+	argv[1] = NanNew<Number> (rc);
+	argv[2] = NanNew<String> (addr);
+	cb->Call (NanGetCurrentContext()->Global (), argc, argv);
 	
-	return scope.Close (args.This ());
+    NanReturnValue (args.This ());
+	return;
 }
 
-Handle<Value> SocketWrap::Send (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::Send) {
+	NanScope();
 	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
 	Local<Object> buffer;
 	uint32_t offset;
@@ -618,99 +625,103 @@ Handle<Value> SocketWrap::Send (const Arguments& args) {
 	char *data;
 	
 	if (args.Length () < 5) {
-		ThrowException (Exception::Error (String::New (
-				"Five arguments are required")));
-		return scope.Close (args.This ());
+		NanThrowError ("Five arguments are required");
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	if (! node::Buffer::HasInstance (args[0])) {
-		ThrowException (Exception::TypeError (String::New (
-				"Buffer argument must be a node Buffer object")));
-		return scope.Close (args.This ());
+		NanThrowError ("Buffer argument must be a node Buffer object");
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	if (! args[1]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Offset argument must be an unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Offset argument must be an unsigned integer");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[2]->IsUint32 ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Length argument must be an unsigned integer")));
-		return scope.Close (args.This ());
+		NanThrowError ("Length argument must be an unsigned integer");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[3]->IsString ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Address argument must be a string")));
-		return scope.Close (args.This ());
+		NanThrowError ("Address argument must be a string");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[4]->IsFunction ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Callback argument must be a function")));
-		return scope.Close (args.This ());
+		NanThrowError ("Callback argument must be a function");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	rc = socket->CreateSocket ();
 	if (rc != 0) {
-		ThrowException (Exception::Error (String::New (raw_strerror (errno))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (errno));
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	buffer = args[0]->ToObject ();
 	offset = args[1]->ToUint32 ()->Value ();
 	length = args[2]->ToUint32 ()->Value ();
-	String::AsciiValue address (args[3]);
+	NanAsciiString address (args[3]);
 
 	data = node::Buffer::Data (buffer) + offset;
 	
 	if (socket->family_ == AF_INET6) {
-		struct sockaddr_in6 addr = uv_ip6_addr (*address, 0);
+		struct sockaddr_in6 addr;
+        uv_ip6_addr (*address, 0, &addr);
 		rc = sendto (socket->poll_fd_, data, length, 0,
 				(struct sockaddr *) &addr, sizeof (addr));
 	} else {
-		struct sockaddr_in addr = uv_ip4_addr (*address, 0);
+		struct sockaddr_in addr;
+        uv_ip4_addr (*address, 0, &addr);
 		rc = sendto (socket->poll_fd_, data, length, 0,
 				(struct sockaddr *) &addr, sizeof (addr));
 	}
 	
 	if (rc == SOCKET_ERROR) {
-		ThrowException (Exception::Error (String::New (raw_strerror (
-				SOCKET_ERRNO))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (SOCKET_ERRNO));
+        NanReturnValue (args.This ());
+		return;
 	}
 	
 	Local<Function> cb = Local<Function>::Cast (args[4]);
 	const unsigned argc = 1;
 	Local<Value> argv[argc];
-	argv[0] = Number::New (rc);
-	cb->Call (Context::GetCurrent ()->Global (), argc, argv);
+	argv[0] = NanNew<Number> (rc);
+	cb->Call (NanGetCurrentContext()->Global (), argc, argv);
 	
-	return scope.Close (args.This ());
+    NanReturnValue (args.This ());
+    return;
 }
 
-Handle<Value> SocketWrap::SetOption (const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(SocketWrap::SetOption) {
+	NanScope();
 	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
 	
 	if (args.Length () < 3) {
-		ThrowException (Exception::Error (String::New (
-				"Three or four arguments are required")));
-		return scope.Close (args.This ());
+		NanThrowError ("Three or four arguments are required");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[0]->IsNumber ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Level argument must be a number")));
-		return scope.Close (args.This ());
+		NanThrowError ("Level argument must be a number");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	if (! args[1]->IsNumber ()) {
-		ThrowException (Exception::TypeError (String::New (
-				"Option argument must be a number")));
-		return scope.Close (args.This ());
+		NanThrowError ("Option argument must be a number");
+        NanReturnValue (args.This ());
+		return;
 	}
 
 	int level = args[0]->ToInt32 ()->Value ();
@@ -721,33 +732,32 @@ Handle<Value> SocketWrap::SetOption (const Arguments& args) {
 
 	if (args.Length () > 3) {
 		if (! node::Buffer::HasInstance (args[2])) {
-			ThrowException (Exception::TypeError (String::New (
-					"Value argument must be a node Buffer object if length is "
-					"provided")));
-			return scope.Close (args.This ());
+			NanThrowError ("Value argument must be a node Buffer object if length is provided");
+            NanReturnValue (args.This ());
+			return;
 		}
 		
 		Local<Object> buffer = args[2]->ToObject ();
 		val = node::Buffer::Data (buffer);
 
 		if (! args[3]->IsInt32 ()) {
-			ThrowException (Exception::TypeError (String::New (
-					"Length argument must be an unsigned integer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Length argument must be an unsigned integer");
+            NanReturnValue (args.This ());
+			return;
 		}
 
 		len = args[3]->ToInt32 ()->Value ();
 
 		if (len > node::Buffer::Length (buffer)) {
-			ThrowException (Exception::TypeError (String::New (
-					"Length argument is larger than buffer length")));
-			return scope.Close (args.This ());
+			NanThrowError ("Length argument is larger than buffer length");
+            NanReturnValue (args.This ());
+			return;
 		}
 	} else {
 		if (! args[2]->IsUint32 ()) {
-			ThrowException (Exception::TypeError (String::New (
-					"Value argument must be a unsigned integer")));
-			return scope.Close (args.This ());
+			NanThrowError ("Value argument must be a unsigned integer");
+            NanReturnValue (args.This ());
+			return;
 		}
 
 		ival = args[2]->ToUint32 ()->Value ();
@@ -758,12 +768,13 @@ Handle<Value> SocketWrap::SetOption (const Arguments& args) {
 			(val ? val : (SOCKET_OPT_TYPE) &ival), len);
 
 	if (rc == SOCKET_ERROR) {
-		ThrowException (Exception::Error (String::New (
-				raw_strerror (SOCKET_ERRNO))));
-		return scope.Close (args.This ());
+		NanThrowError (raw_strerror (SOCKET_ERRNO));
+        NanReturnValue (args.This ());
+		return;
 	}
 	
-	return scope.Close (args.This ());
+    NanReturnValue (args.This ());
+	return;
 }
 
 static void IoEvent (uv_poll_t* watcher, int status, int revents) {

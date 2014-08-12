@@ -43,19 +43,22 @@
 #define SOCKET_LEN_TYPE socklen_t
 #endif
 
-using namespace v8;
+using v8::FunctionTemplate;
+using v8::Handle;
+using v8::Object;
+using v8::String;
 
 namespace raw {
 
-Handle<Value> CreateChecksum (const Arguments& args);
+NAN_METHOD (CreateChecksum);
 
 void ExportConstants (Handle<Object> target);
 void ExportFunctions (Handle<Object> target);
 
-Handle<Value> Htonl (const Arguments& args);
-Handle<Value> Htons (const Arguments& args);
-Handle<Value> Ntohl (const Arguments& args);
-Handle<Value> Ntohs (const Arguments& args);
+NAN_METHOD (Htonl);
+NAN_METHOD (Htons);
+NAN_METHOD (Ntohl);
+NAN_METHOD (Ntohs);
 
 class SocketWrap : public node::ObjectWrap {
 public:
@@ -66,22 +69,22 @@ private:
 	SocketWrap ();
 	~SocketWrap ();
 
-	static Handle<Value> Close (const Arguments& args);
+	static NAN_METHOD (Close);
 
 	void CloseSocket (void);
 	
 	int CreateSocket (void);
 
-	static Handle<Value> GetOption (const Arguments& args);
+	static NAN_METHOD (GetOption);
 
-	static Handle<Value> New (const Arguments& args);
+	static NAN_METHOD (New);
 
 	static void OnClose (uv_handle_t *handle);
 
-	static Handle<Value> Pause (const Arguments& args);
-	static Handle<Value> Recv (const Arguments& args);
-	static Handle<Value> Send (const Arguments& args);
-	static Handle<Value> SetOption (const Arguments& args);
+	static NAN_METHOD (Pause);
+	static NAN_METHOD (Recv);
+	static NAN_METHOD (Send);
+	static NAN_METHOD (SetOption);
 
 	bool no_ip_header_;
 

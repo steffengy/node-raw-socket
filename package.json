@@ -6,8 +6,10 @@
   "directories": {
     "example": "example"
   },
-  "dependencies": {},
-  "contributors": [ 
+  "dependencies": {
+    "nan": "^1.3.0"
+  },
+  "contributors": [
     {
       "name": "Stephen Vickers",
       "email": "stephen.vickers.sv@gmail.com"

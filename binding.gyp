@@ -9,6 +9,9 @@
         ['OS=="win"', {
           'libraries' : ['ws2_32.lib']
         }]
+      ],
+      "include_dirs" : [
+        "<!(node -e \"require('nan')\")"
       ]
     }
   ]
