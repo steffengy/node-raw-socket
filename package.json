@@ -1,6 +1,6 @@
 {
-  "name": "raw-socket",
-  "version": "1.2.2",
+  "name": "raw-socket2",
+  "version": "1.2.3",
   "description": "Raw sockets for Node.js.",
   "main": "index.js",
   "directories": {
@@ -13,11 +13,15 @@
     {
       "name": "Stephen Vickers",
       "email": "stephen.vickers.sv@gmail.com"
-    } 
+    },
+    {
+      "name": "Steffen",
+      "email": "steffenb198@aol.com"
+    }
   ],
   "repository": {
-    "type": "mercurial",
-    "url": "https://bitbucket.org/stephenwvickers/node-raw-socket"
+    "type": "git",
+    "url": "https://github.com/steffengy/node-raw-socket"
   },
   "keywords": [
     "checksum",
