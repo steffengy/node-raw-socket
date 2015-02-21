@@ -627,23 +627,39 @@ NAN_METHOD(SocketWrap::Bind) {
 		return;
 	}
 	
+	if (! args[0]->IsString ()) {
+		NanThrowError ("Address argument must be a string");
+        NanReturnValue (args.This ());
+		return;
+	}
+	
+	if (! args[1]->IsUint32 ()) {
+		NanThrowError ("Port argument must be an unsigned integer");
+        NanReturnValue (args.This ());
+		return;
+	}
+	
 	struct sockaddr_in serv_addr;
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	int portno = args[1]->ToInt32 ()->Value ();
 	serv_addr.sin_family = AF_INET;
 	NanAsciiString address (args[0]);
-	inet_pton(AF_INET, *address, &(serv_addr.sin_addr));
+	if (inet_pton(AF_INET, *address, &(serv_addr.sin_addr)) == 0) {
+		NanThrowError ("Adress must be a valid one");
+        NanReturnValue (args.This ());
+		return;
+	}
 	serv_addr.sin_port = htons(portno);
 	
 	int yes = 1;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-		NanThrowError ("setsockopt error");
+		NanThrowError ("setsockopt() error");
         NanReturnValue (args.This ());
 		return;
 	}
 	
 	if (::bind(socket->poll_fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-		NanThrowError ("bind error");
+		NanThrowError ("bind() error");
         NanReturnValue (args.This ());
 		return;
 	}
