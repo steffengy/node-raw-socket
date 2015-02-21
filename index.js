@@ -136,6 +136,10 @@ Socket.prototype.resumeSend = function () {
 	return this;
 }
 
+Socket.prototype.bind = function (address, port) {
+	this.wrap.bind(address, port);
+	return this;
+}
 Socket.prototype.send = function (buffer, offset, length, address,
 		beforeCallback, afterCallback) {
 	if (! afterCallback) {
