@@ -250,6 +250,7 @@ void ExportConstants (Handle<Object> target) {
 	socket_option->Set (NanNew<String>("SO_RCVBUF"), NanNew<Number> (SO_RCVBUF));
 	socket_option->Set (NanNew<String>("SO_RCVTIMEO"), NanNew<Number> (SO_RCVTIMEO));
 	socket_option->Set (NanNew<String>("SO_SNDBUF"), NanNew<Number> (SO_SNDBUF));
+	socket_option->Set (NanNew<String>("SO_BINDTODEVICE"), NanNew<Number> (SO_BINDTODEVICE));
 	socket_option->Set (NanNew<String>("SO_SNDTIMEO"), NanNew<Number> (SO_SNDTIMEO));
 
 	socket_option->Set (NanNew<String>("IP_HDRINCL"), NanNew<Number> (IP_HDRINCL));
@@ -287,6 +288,7 @@ void SocketWrap::Init (Handle<Object> target) {
 	NODE_SET_PROTOTYPE_METHOD(tpl, "pause", Pause);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "recv", Recv);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "send", Send);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "bind", Bind);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "setOption", SetOption);
 
 	target->Set (NanNew<String> ("SocketWrap"), tpl->GetFunction ());
@@ -610,6 +612,41 @@ NAN_METHOD(SocketWrap::Recv) {
 	argv[1] = NanNew<Number> (rc);
 	argv[2] = NanNew<String> (addr);
 	cb->Call (NanGetCurrentContext()->Global (), argc, argv);
+	
+    NanReturnValue (args.This ());
+	return;
+}
+
+NAN_METHOD(SocketWrap::Bind) {
+	NanScope();
+	SocketWrap* socket = SocketWrap::Unwrap<SocketWrap> (args.This ());
+	
+	if (args.Length () < 2) {
+		NanThrowError ("Two arguments are required");
+        NanReturnValue (args.This ());
+		return;
+	}
+	
+	struct sockaddr_in serv_addr;
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+	int portno = args[1]->ToInt32 ()->Value ();
+	serv_addr.sin_family = AF_INET;
+	NanAsciiString address (args[0]);
+	inet_pton(AF_INET, *address, &(serv_addr.sin_addr));
+	serv_addr.sin_port = htons(portno);
+	
+	int yes = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+		NanThrowError ("setsockopt error");
+        NanReturnValue (args.This ());
+		return;
+	}
+	
+	if (::bind(socket->poll_fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+		NanThrowError ("bind error");
+        NanReturnValue (args.This ());
+		return;
+	}
 	
     NanReturnValue (args.This ());
 	return;
