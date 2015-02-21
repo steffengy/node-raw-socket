@@ -76,13 +76,11 @@ NAN_METHOD(CreateChecksum) {
 	if (args.Length () < 2) {
 		NanThrowError ("At least one argument is required");
 		NanReturnValue (args.This ());
-        return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
 		NanThrowError ("Start with argument must be an unsigned integer");
 		NanReturnValue (args.This ());
-        return;
 	}
 	
 	uint32_t start_with = args[0]->ToUint32 ()->Value ();
@@ -90,13 +88,11 @@ NAN_METHOD(CreateChecksum) {
 	if (start_with > 65535) {
 		NanThrowError ("Start with argument cannot be larger than 65535");
 		NanReturnValue (args.This ());
-        return;
 	}
 
 	if (! node::Buffer::HasInstance (args[1])) {
 		NanThrowError ("Buffer argument must be a node Buffer object");
 		NanReturnValue (args.This ());
-        return;
 	}
 	
 	Local<Object> buffer = args[1]->ToObject ();
@@ -108,13 +104,11 @@ NAN_METHOD(CreateChecksum) {
 		if (! args[2]->IsUint32 ()) {
 			NanThrowError ("Offset argument must be an unsigned integer");
 			NanReturnValue (args.This ());
-            return;
 		}
 		offset = args[2]->ToUint32 ()->Value ();
 		if (offset >= length) {
 			NanThrowError ("Offset argument must be smaller than length of the buffer");
 			NanReturnValue (args.This ());
-            return;
 		}
 	}
 	
@@ -122,13 +116,11 @@ NAN_METHOD(CreateChecksum) {
 		if (! args[3]->IsUint32 ()) {
 			NanThrowError ("Length argument must be an unsigned integer");
             NanReturnValue (args.This ());
-            return;
 		}
 		unsigned int new_length = args[3]->ToUint32 ()->Value ();
 		if (new_length > length) {
 			NanThrowError ("Length argument must be smaller than length of the buffer");
 			NanReturnValue (args.This ());
-            return;
 		}
 		length = new_length;
 	}
@@ -137,7 +129,6 @@ NAN_METHOD(CreateChecksum) {
 			(unsigned char *) data + offset, length);
 	
     NanReturnValue (NanNew<Integer>(sum));
-	return;
 }
 
 NAN_METHOD(Htonl) {
@@ -146,20 +137,17 @@ NAN_METHOD(Htonl) {
 	if (args.Length () < 1) {
 		NanThrowError ("One arguments is required");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
 		NanThrowError ("Number must be a 32 unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	unsigned int number = args[0]->ToUint32 ()->Value ();
 	Local<Integer> converted = NanNew<Integer>(htonl (number));
 
     NanReturnValue(converted);
-	return;
 }
 
 NAN_METHOD(Htons) {
@@ -168,24 +156,20 @@ NAN_METHOD(Htons) {
 	if (args.Length () < 1) {
 		NanThrowError ("One arguments is required");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
 		NanThrowError ("Number must be a 16 unsigned integer");
 		NanReturnValue (args.This ());
-        return;
 	}
 	
 	unsigned int number = args[0]->ToUint32 ()->Value ();
 	if (number > 65535) {
 		NanThrowError ("Number cannot be larger than 65535");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	NanReturnValue(NanNew<Integer>(htons (number)));
-    return;
 }
 
 NAN_METHOD(Ntohl) {
@@ -194,19 +178,16 @@ NAN_METHOD(Ntohl) {
 	if (args.Length () < 1) {
 		NanThrowError ("One arguments is required");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
 		NanThrowError ("Number must be a 32 unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	unsigned int number = args[0]->ToUint32 ()->Value ();
 
 	NanReturnValue(NanNew<Integer>(ntohl (number)));
-    return;
 }
 
 NAN_METHOD(Ntohs) {
@@ -215,24 +196,20 @@ NAN_METHOD(Ntohs) {
 	if (args.Length () < 1) {
 		NanThrowError ("One arguments is required");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[0]->IsUint32 ()) {
 		NanThrowError ("Number must be a 16 unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	unsigned int number = args[0]->ToUint32 ()->Value ();
 	if (number > 65535) {
 		NanThrowError ("Number cannot be larger than 65535");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	NanReturnValue(NanNew<Integer>(htons (number)));
-    return;
 }
 
 void ExportConstants (Handle<Object> target) {
@@ -243,8 +220,8 @@ void ExportConstants (Handle<Object> target) {
 	target->Set (NanNew<String>("SocketOption"), socket_option);
 
 	socket_level->Set (NanNew<String>("SOL_SOCKET"), NanNew<Number> (SOL_SOCKET));
-	socket_level->Set (NanNew<String>("IPPROTO_IP"), NanNew<Number> (IPPROTO_IP));
-	socket_level->Set (NanNew<String>("IPPROTO_IPV6"), NanNew<Number> (IPPROTO_IPV6));
+	socket_level->Set (NanNew<String>("IPPROTO_IP"), NanNew<Number> ((int)IPPROTO_IP));
+	socket_level->Set (NanNew<String>("IPPROTO_IPV6"), NanNew<Number> ((int)IPPROTO_IPV6));
 
 	socket_option->Set (NanNew<String>("SO_BROADCAST"), NanNew<Number> (SO_BROADCAST));
 	socket_option->Set (NanNew<String>("SO_RCVBUF"), NanNew<Number> (SO_RCVBUF));
@@ -310,7 +287,6 @@ NAN_METHOD(SocketWrap::Close) {
 	socket->CloseSocket ();
 
     NanReturnValue(args.This ());
-    return;
 }
 
 void SocketWrap::CloseSocket (void) {
@@ -370,19 +346,16 @@ NAN_METHOD(SocketWrap::GetOption) {
 	if (args.Length () < 3) {
 		NanThrowError ("Three arguments are required");
         NanReturnValue (args.This ());
-        return;
 	}
 
 	if (! args[0]->IsNumber ()) {
 		NanThrowError ("Level argument must be a number");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[1]->IsNumber ()) {
 		NanThrowError ("Option argument must be a number");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	int level = args[0]->ToInt32 ()->Value ();
@@ -394,7 +367,6 @@ NAN_METHOD(SocketWrap::GetOption) {
 	if (! node::Buffer::HasInstance (args[2])) {
 		NanThrowError ("Value argument must be a node Buffer object if length is provided");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	Local<Object> buffer = args[2]->ToObject ();
@@ -403,7 +375,6 @@ NAN_METHOD(SocketWrap::GetOption) {
 	if (! args[3]->IsInt32 ()) {
 		NanThrowError ("Length argument must be an unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	len = (SOCKET_LEN_TYPE) node::Buffer::Length (buffer);
@@ -414,12 +385,10 @@ NAN_METHOD(SocketWrap::GetOption) {
 	if (rc == SOCKET_ERROR) {
 		NanThrowError (raw_strerror (SOCKET_ERRNO));
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	Local<Number> got = NanNew<v8::Uint32>(len);
     NanReturnValue(got);
-	return;
 }
 
 void SocketWrap::HandleIOEvent (int status, int revents) {
@@ -455,13 +424,11 @@ NAN_METHOD(SocketWrap::New) {
 	if (args.Length () < 1) {
 		NanThrowError ("One argument is required");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! args[0]->IsUint32 ()) {
 		NanThrowError ("Protocol argument must be an unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	} else {
 		socket->protocol_ = args[0]->ToUint32 ()->Value ();
 	}
@@ -470,7 +437,6 @@ NAN_METHOD(SocketWrap::New) {
 		if (! args[1]->IsUint32 ()) {
 			NanThrowError ("Address family argument must be an unsigned integer");
             NanReturnValue (args.This ());
-			return;
 		} else {
 			if (args[1]->ToUint32 ()->Value () == 2)
 				family = AF_INET6;
@@ -487,13 +453,11 @@ NAN_METHOD(SocketWrap::New) {
 	if (rc != 0) {
 		NanThrowError (raw_strerror (rc));
         NanReturnValue (args.This ());
-		return;
 	}
 
 	socket->Wrap (args.This ());
 
     NanReturnValue (args.This ());
-	return;
 }
 
 void SocketWrap::OnClose (uv_handle_t *handle) {
@@ -507,20 +471,17 @@ NAN_METHOD(SocketWrap::Pause) {
 	if (args.Length () < 2) {
 		NanThrowError ("Two arguments are required");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! args[0]->IsBoolean ()) {
 		NanThrowError ("Recv argument must be a boolean");
         NanReturnValue (args.This ());
-		return;
 	}
 	bool pause_recv = args[0]->ToBoolean ()->Value ();
 
 	if (! args[1]->IsBoolean ()) {
 		NanThrowError ("Send argument must be a boolean");
         NanReturnValue (args.This ());
-		return;
 	}
 	bool pause_send = args[1]->ToBoolean ()->Value ();
 	
@@ -534,7 +495,6 @@ NAN_METHOD(SocketWrap::Pause) {
 	}
 	
     NanReturnValue (args.This ());
-	return;
 }
 
 NAN_METHOD(SocketWrap::Recv) {
@@ -558,13 +518,11 @@ NAN_METHOD(SocketWrap::Recv) {
 	if (args.Length () < 2) {
 		NanThrowError ("Five arguments are required");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! node::Buffer::HasInstance (args[0])) {
 		NanThrowError ("Buffer argument must be a node Buffer object");
         NanReturnValue (args.This ());
-		return;
 	} else {
 		buffer = args[0]->ToObject ();
 	}
@@ -572,14 +530,12 @@ NAN_METHOD(SocketWrap::Recv) {
 	if (! args[1]->IsFunction ()) {
 		NanThrowError ("Callback argument must be a function");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	rc = socket->CreateSocket ();
 	if (rc != 0) {
 		NanThrowError (raw_strerror (errno));
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (socket->family_ == AF_INET6) {
@@ -597,7 +553,6 @@ NAN_METHOD(SocketWrap::Recv) {
 	if (rc == SOCKET_ERROR) {
 		NanThrowError (raw_strerror (SOCKET_ERRNO));
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (socket->family_ == AF_INET6)
@@ -614,7 +569,6 @@ NAN_METHOD(SocketWrap::Recv) {
 	cb->Call (NanGetCurrentContext()->Global (), argc, argv);
 	
     NanReturnValue (args.This ());
-	return;
 }
 
 NAN_METHOD(SocketWrap::Bind) {
@@ -624,19 +578,16 @@ NAN_METHOD(SocketWrap::Bind) {
 	if (args.Length () < 2) {
 		NanThrowError ("Two arguments are required");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! args[0]->IsString ()) {
 		NanThrowError ("Address argument must be a string");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! args[1]->IsUint32 ()) {
 		NanThrowError ("Port argument must be an unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	struct sockaddr_in serv_addr;
@@ -647,25 +598,21 @@ NAN_METHOD(SocketWrap::Bind) {
 	if (inet_pton(AF_INET, *address, &(serv_addr.sin_addr)) == 0) {
 		NanThrowError ("Adress must be a valid one");
         NanReturnValue (args.This ());
-		return;
 	}
 	serv_addr.sin_port = htons(portno);
 	
 	int yes = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+	if (setsockopt(socket->poll_fd_, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		NanThrowError ("setsockopt() error");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (::bind(socket->poll_fd_, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
 		NanThrowError ("bind() error");
         NanReturnValue (args.This ());
-		return;
 	}
 	
     NanReturnValue (args.This ());
-	return;
 }
 
 NAN_METHOD(SocketWrap::Send) {
@@ -680,44 +627,37 @@ NAN_METHOD(SocketWrap::Send) {
 	if (args.Length () < 5) {
 		NanThrowError ("Five arguments are required");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! node::Buffer::HasInstance (args[0])) {
 		NanThrowError ("Buffer argument must be a node Buffer object");
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	if (! args[1]->IsUint32 ()) {
 		NanThrowError ("Offset argument must be an unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[2]->IsUint32 ()) {
 		NanThrowError ("Length argument must be an unsigned integer");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[3]->IsString ()) {
 		NanThrowError ("Address argument must be a string");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[4]->IsFunction ()) {
 		NanThrowError ("Callback argument must be a function");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	rc = socket->CreateSocket ();
 	if (rc != 0) {
 		NanThrowError (raw_strerror (errno));
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	buffer = args[0]->ToObject ();
@@ -728,13 +668,11 @@ NAN_METHOD(SocketWrap::Send) {
 	data = node::Buffer::Data (buffer) + offset;
 	
 	if (socket->family_ == AF_INET6) {
-		struct sockaddr_in6 addr;
-        uv_ip6_addr (*address, 0, &addr);
+		struct sockaddr_in6 addr = uv_ip6_addr (*address, 0);
 		rc = sendto (socket->poll_fd_, data, length, 0,
 				(struct sockaddr *) &addr, sizeof (addr));
 	} else {
-		struct sockaddr_in addr;
-        uv_ip4_addr (*address, 0, &addr);
+        struct sockaddr_in addr = uv_ip4_addr (*address, 0);
 		rc = sendto (socket->poll_fd_, data, length, 0,
 				(struct sockaddr *) &addr, sizeof (addr));
 	}
@@ -742,7 +680,6 @@ NAN_METHOD(SocketWrap::Send) {
 	if (rc == SOCKET_ERROR) {
 		NanThrowError (raw_strerror (SOCKET_ERRNO));
         NanReturnValue (args.This ());
-		return;
 	}
 	
 	Local<Function> cb = Local<Function>::Cast (args[4]);
@@ -752,7 +689,6 @@ NAN_METHOD(SocketWrap::Send) {
 	cb->Call (NanGetCurrentContext()->Global (), argc, argv);
 	
     NanReturnValue (args.This ());
-    return;
 }
 
 NAN_METHOD(SocketWrap::SetOption) {
@@ -762,19 +698,16 @@ NAN_METHOD(SocketWrap::SetOption) {
 	if (args.Length () < 3) {
 		NanThrowError ("Three or four arguments are required");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[0]->IsNumber ()) {
 		NanThrowError ("Level argument must be a number");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	if (! args[1]->IsNumber ()) {
 		NanThrowError ("Option argument must be a number");
         NanReturnValue (args.This ());
-		return;
 	}
 
 	int level = args[0]->ToInt32 ()->Value ();
@@ -787,7 +720,6 @@ NAN_METHOD(SocketWrap::SetOption) {
 		if (! node::Buffer::HasInstance (args[2])) {
 			NanThrowError ("Value argument must be a node Buffer object if length is provided");
             NanReturnValue (args.This ());
-			return;
 		}
 		
 		Local<Object> buffer = args[2]->ToObject ();
@@ -796,7 +728,6 @@ NAN_METHOD(SocketWrap::SetOption) {
 		if (! args[3]->IsInt32 ()) {
 			NanThrowError ("Length argument must be an unsigned integer");
             NanReturnValue (args.This ());
-			return;
 		}
 
 		len = args[3]->ToInt32 ()->Value ();
@@ -804,13 +735,11 @@ NAN_METHOD(SocketWrap::SetOption) {
 		if (len > node::Buffer::Length (buffer)) {
 			NanThrowError ("Length argument is larger than buffer length");
             NanReturnValue (args.This ());
-			return;
 		}
 	} else {
 		if (! args[2]->IsUint32 ()) {
 			NanThrowError ("Value argument must be a unsigned integer");
             NanReturnValue (args.This ());
-			return;
 		}
 
 		ival = args[2]->ToUint32 ()->Value ();
@@ -823,11 +752,9 @@ NAN_METHOD(SocketWrap::SetOption) {
 	if (rc == SOCKET_ERROR) {
 		NanThrowError (raw_strerror (SOCKET_ERRNO));
         NanReturnValue (args.This ());
-		return;
 	}
 	
     NanReturnValue (args.This ());
-	return;
 }
 
 static void IoEvent (uv_poll_t* watcher, int status, int revents) {

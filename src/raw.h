@@ -84,6 +84,7 @@ private:
 	static NAN_METHOD (Pause);
 	static NAN_METHOD (Recv);
 	static NAN_METHOD (Send);
+	static NAN_METHOD (Bind);
 	static NAN_METHOD (SetOption);
 
 	bool no_ip_header_;
