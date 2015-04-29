@@ -1,27 +1,23 @@
 {
-  "name": "raw-socket2",
+  "name": "raw-socket-ng",
   "version": "1.2.3",
-  "description": "Raw sockets for Node.js.",
+  "description": "Raw sockets and native bindings for Node & io.js.",
   "main": "index.js",
   "directories": {
     "example": "example"
   },
   "dependencies": {
-    "nan": "^1.3.0"
+    "nan": "^1.8.4"
   },
   "contributors": [
     {
-      "name": "Stephen Vickers",
-      "email": "stephen.vickers.sv@gmail.com"
-    },
-    {
-      "name": "Steffen",
-      "email": "steffenb198@aol.com"
+      "name": "Kenan Sulayman",
+      "email": "kenan@sly.mn"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/steffengy/node-raw-socket"
+    "url": "https://github.com/perint/node-raw-socket"
   },
   "keywords": [
     "checksum",
@@ -38,6 +34,6 @@
     "socket",
     "sockets"
   ],
-  "author": "Stephen Vickers <stephen.vickers.sv@gmail.com>",
+  "author": "Kenan Sulayman <kenan@sly.mn>",
   "license": "MIT"
 }
