@@ -302,6 +302,9 @@ void SocketWrap::CloseSocket (void) {
 		this->poll_fd_ = INVALID_SOCKET;
 		this->poll_initialised_ = false;
 	}
+  if (deconstructing_) {
+    return;
+  }
 
 	Local<Value> emit = NanObjectWrapHandle(this)->Get (NanNew(EmitSymbol));
 	Local<Function> cb = emit.As<Function> ();

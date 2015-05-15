@@ -1,6 +1,6 @@
 {
-  "name": "raw-socket-ng",
-  "version": "1.2.3",
+  "name": "raw-socket2",
+  "version": "1.2.5",
   "description": "Raw sockets and native bindings for Node & io.js.",
   "main": "index.js",
   "directories": {
@@ -11,13 +11,17 @@
   },
   "contributors": [
     {
-      "name": "Kenan Sulayman",
-      "email": "kenan@sly.mn"
+      "name": "Stephen Vickers",
+      "email": "stephen.vickers.sv@gmail.com"
+    },
+    {
+      "name": "Steffen",
+      "email": "steffenb198@aol.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/perint/raw-socket-ng"
+    "url": "https://github.com/steffengy/node-raw-socket"
   },
   "keywords": [
     "checksum",
@@ -34,6 +38,6 @@
     "socket",
     "sockets"
   ],
-  "author": "Kenan Sulayman <kenan@sly.mn>",
+  "author": "Stephen Vickers <stephen.vickers.sv@gmail.com>",
   "license": "MIT"
 }
