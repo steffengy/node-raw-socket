@@ -600,7 +600,7 @@ NAN_METHOD(SocketWrap::Bind) {
 	}
 
 	struct sockaddr_in serv_addr;
-	bzero((char *) &serv_addr, sizeof(serv_addr));
+	memset((char *) &serv_addr, 0, sizeof(serv_addr));
 	int portno = args[1]->ToInt32 ()->Value ();
 	serv_addr.sin_family = AF_INET;
 	NanAsciiString address (args[0]);
