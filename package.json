@@ -1,6 +1,6 @@
 {
   "name": "raw-socket2",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Raw sockets and native bindings for Node & io.js.",
   "main": "index.js",
   "directories": {
