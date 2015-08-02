@@ -679,14 +679,22 @@ NAN_METHOD(SocketWrap::Send) {
 	if (socket->family_ == AF_INET6) {
 		struct sockaddr_in6 addr;
 
+#if NODE_MODULE_VERSION >= 14
 		uv_ip6_addr (*address, 0, &addr);
+#else
+                addr = uv_ip6_addr(*address, 0);
+#endif
 
 		rc = sendto (socket->poll_fd_, data, length, 0,
 				(struct sockaddr *) &addr, sizeof (addr));
 	} else {
 		struct sockaddr_in addr;
 
+#if NODE_MODULE_VERSION >= 14
 		uv_ip4_addr (*address, 0, &addr);
+#else
+		addr = uv_ip4_addr (*address, 0);
+#endif
 
 		rc = sendto (socket->poll_fd_, data, length, 0,
 				(struct sockaddr *) &addr, sizeof (addr));
